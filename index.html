@@ -1681,7 +1681,8 @@ function createFavicon(bm, className) {
   img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
   img.onerror = () => { img.remove(); delete tile.dataset.icon; addFallbackLetter(tile, bm.name); };
   img.onload = () => {
-    if (iconMeta[host]) return;
+    // Another tile of the same site may have analysed it in the meantime
+    if (iconMeta[host]) { applyIconMeta(tile, iconMeta[host]); return; }
     try {
       const meta = analyzeIcon(img);
       applyIconMeta(tile, meta);
