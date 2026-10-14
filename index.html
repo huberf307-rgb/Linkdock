@@ -1609,22 +1609,40 @@ function sorted(list) {
 const ICON_X = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
 
 // ── Website icons ─────────────────────────────────────────────────────
-// Icons come through our own /api/icon proxy (same origin), so the
-// canvas may read their pixels and the tile can adapt to each icon.
-const ICON_META_KEY  = 'webfavs_iconmeta';
-const USE_ICON_PROXY = location.protocol.startsWith('http');
+// Sources are tried in order until one loads:
+//   proxy  our own /api/icon (Vercel / Cloudflare function, same origin)
+//   horse  icon.horse — public, CORS-enabled, mostly large app icons
+//   google Google's favicon service — always there, but pixels unreadable
+// The first two let the canvas read the pixels so the tile can adapt.
+const ICON_META_KEY = 'webfavs_iconmeta';
 let iconMeta = {};
 try { iconMeta = JSON.parse(localStorage.getItem(ICON_META_KEY)) || {}; } catch { iconMeta = {}; }
 let iconMetaTimer = null;
 
-function getFaviconUrl(url) {
-  try {
-    const host = new URL(url).hostname;
-    return USE_ICON_PROXY
-      ? `api/icon?domain=${encodeURIComponent(host)}`
-      : `https://www.google.com/s2/favicons?domain=${encodeURIComponent('https://' + host)}&sz=128`;
-  } catch { return null; }
-}
+const ICON_SOURCES = {
+  proxy:  host => ({ src: `api/icon?domain=${encodeURIComponent(host)}`, cors: false, readable: true }),
+  horse:  host => ({ src: `https://icon.horse/icon/${encodeURIComponent(host)}`, cors: true, readable: true }),
+  google: host => ({ src: `https://www.google.com/s2/favicons?domain=${encodeURIComponent('https://' + host)}&sz=128`, cors: false, readable: false }),
+};
+
+// Static hosts without the function answer /api/icon with the HTML page,
+// so check once per session that it really returns an image.
+const iconProxyReady = (() => {
+  if (!location.protocol.startsWith('http')) return Promise.resolve(false);
+  let cached = null;
+  try { cached = sessionStorage.getItem('linkdock_iconproxy'); } catch { /* storage blocked */ }
+  if (cached) return Promise.resolve(cached === '1');
+  return fetch('api/icon?domain=google.com')
+    .then(r => r.ok && (r.headers.get('content-type') || '').startsWith('image/'))
+    .catch(() => false)
+    .then(ok => {
+      try { sessionStorage.setItem('linkdock_iconproxy', ok ? '1' : '0'); } catch { /* storage blocked */ }
+      return ok;
+    });
+})();
+
+// Analysis results differ per source; proxy results keep the plain host key.
+const iconMetaKey = (kind, host) => kind === 'proxy' ? host : `${kind}:${host}`;
 
 // Decides how an icon should sit in its tile by looking at its pixels.
 function analyzeIcon(img) {
@@ -1673,28 +1691,52 @@ function rememberIconMeta(host, meta) {
 function createFavicon(bm, className) {
   const tile = document.createElement('span');
   tile.className = 'favicon-tile ' + className;
-  const src = getFaviconUrl(bm.url);
-  if (!src) { addFallbackLetter(tile, bm.name); return tile; }
+  let host;
+  try { host = new URL(bm.url).hostname; } catch { host = null; }
+  if (!host) { addFallbackLetter(tile, bm.name); return tile; }
 
-  const host = new URL(bm.url).hostname;
-  if (iconMeta[host]) applyIconMeta(tile, iconMeta[host]);
-
+  // No loading="lazy": its src is only set after the proxy check, and lazy
+  // images that get their src late may never start loading.
   const img = document.createElement('img');
-  img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
-  img.onerror = () => { img.remove(); delete tile.dataset.icon; addFallbackLetter(tile, bm.name); };
+  img.alt = ''; img.decoding = 'async';
+  tile.appendChild(img);
+
+  let queue = [];
+  let kind = null;
+
+  const tryNext = () => {
+    kind = queue.shift();
+    if (!kind) {   // every source failed
+      img.remove(); delete tile.dataset.icon; addFallbackLetter(tile, bm.name);
+      return;
+    }
+    const source = ICON_SOURCES[kind](host);
+    const cached = iconMeta[iconMetaKey(kind, host)];
+    if (cached) applyIconMeta(tile, cached); else delete tile.dataset.icon;
+    // crossOrigin must be set before src, and only for CORS-enabled sources
+    if (source.cors) img.crossOrigin = 'anonymous'; else img.removeAttribute('crossorigin');
+    img.src = source.src;
+  };
+
+  img.onerror = tryNext;
   img.onload = () => {
+    const key = iconMetaKey(kind, host);
     // Another tile of the same site may have analysed it in the meantime
-    if (iconMeta[host]) { applyIconMeta(tile, iconMeta[host]); return; }
+    if (iconMeta[key]) { applyIconMeta(tile, iconMeta[key]); return; }
+    if (!ICON_SOURCES[kind](host).readable) { applyIconMeta(tile, { mode: 'light' }); return; }
     try {
       const meta = analyzeIcon(img);
       applyIconMeta(tile, meta);
-      rememberIconMeta(host, meta);
+      rememberIconMeta(key, meta);
     } catch {
       applyIconMeta(tile, { mode: 'light' });   // pixels unreadable — safe default
     }
   };
-  img.src = src;
-  tile.appendChild(img);
+
+  iconProxyReady.then(proxyOk => {
+    queue = proxyOk ? ['proxy', 'horse', 'google'] : ['horse', 'google'];
+    tryNext();
+  });
   return tile;
 }
 

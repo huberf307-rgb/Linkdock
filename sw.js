@@ -2,7 +2,7 @@
 // Pages load network-first (so new deployments show up immediately);
 // images and other assets are served from cache once they've been seen.
 
-const CACHE = 'linkdock-v3';
+const CACHE = 'linkdock-v4';
 const CORE = [
   './',
   './index.html',
@@ -41,7 +41,11 @@ async function cacheFirst(request) {
   if (cached) return cached;
   const response = await fetch(request);
   // Opaque (no-cors) responses are skipped — they cost a lot of quota.
-  if (response.ok) (await caches.open(CACHE)).put(request, response.clone());
+  // Icon requests are only kept when they really are images: a host without
+  // the /api/icon function answers with the HTML page instead.
+  const isImage = (response.headers.get('content-type') || '').startsWith('image/');
+  const isIcon = request.url.includes('/api/icon') || new URL(request.url).hostname === 'icon.horse';
+  if (response.ok && (!isIcon || isImage)) (await caches.open(CACHE)).put(request, response.clone());
   return response;
 }
 
@@ -52,7 +56,8 @@ self.addEventListener('fetch', event => {
 
   if (request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname.endsWith('.webmanifest')) {
     event.respondWith(networkFirst(request));
-  } else if (url.origin === location.origin || url.hostname.endsWith('fonts.gstatic.com')) {
+  } else if (url.origin === location.origin || url.hostname.endsWith('fonts.gstatic.com')
+             || url.hostname === 'icon.horse') {
     event.respondWith(cacheFirst(request));
   }
 });
