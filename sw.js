@@ -2,7 +2,7 @@
 // Pages load network-first (so new deployments show up immediately);
 // images and other assets are served from cache once they've been seen.
 
-const CACHE = 'webfavs-v1';
+const CACHE = 'webfavs-v2';
 const CORE = [
   './',
   './index.html',

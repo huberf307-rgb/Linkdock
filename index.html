@@ -25,9 +25,9 @@
       --bg-card:        rgba(255, 255, 255, 0.5);
       --bg-card-hover:  rgba(255, 255, 255, 0.8);
       --border:         rgba(0, 0, 0, 0.05);
-      --border-accent:  rgba(217, 119, 87, 0.35);
+      --border-accent:  rgba(255, 255, 255, 0.30);
       --accent:         #d97757;
-      --accent-soft:    rgba(217, 119, 87, 0.15);
+      --accent-soft:    rgba(255, 255, 255, 0.13);
       --accent-glow:    rgba(217, 119, 87, 0.25);
       --accent2:        #6a9bcc;
       --star:           #d97757;
@@ -69,6 +69,13 @@
       --lg-shadow:     0 14px 40px rgba(0, 0, 0, 0.30), 0 2px 8px rgba(0, 0, 0, 0.14);
       --spring:        cubic-bezier(0.34, 1.56, 0.64, 1);
       --ease-out:      cubic-bezier(0.22, 1, 0.36, 1);
+
+      /* Prominent glass: the bright frosted fill Apple uses for the active
+         segment / primary action — replaces the old orange-blue gradient */
+      --prominent-bg:     linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(232, 232, 237, 0.92));
+      --prominent-hover:  linear-gradient(180deg, #ffffff, rgba(242, 242, 246, 0.96));
+      --prominent-text:   #1c1c1e;
+      --prominent-shadow: inset 0 1px 0 #fff, inset 0 -1px 0 rgba(0, 0, 0, 0.08), 0 4px 14px rgba(0, 0, 0, 0.25);
     }
 
     [data-theme="dark"] {
@@ -77,9 +84,9 @@
       --bg-card:        rgba(30, 30, 28, 0.5);
       --bg-card-hover:  rgba(50, 50, 48, 0.8);
       --border:         rgba(255, 255, 255, 0.05);
-      --border-accent:  rgba(217, 119, 87, 0.35);
+      --border-accent:  rgba(255, 255, 255, 0.30);
       --accent:         #d97757;
-      --accent-soft:    rgba(217, 119, 87, 0.15);
+      --accent-soft:    rgba(255, 255, 255, 0.13);
       --accent-glow:    rgba(217, 119, 87, 0.35);
       --accent2:        #6a9bcc;
       --star:           #d97757;
@@ -253,6 +260,10 @@
       padding: 4px 6px;
       user-select: none;
     }
+    .bg-group-label {
+      font-size: 0.68rem; font-weight: 500; color: var(--text-muted);
+      padding: 8px 6px 0;
+    }
     .bg-images-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -323,7 +334,7 @@
     .header-brand { display: flex; align-items: center; gap: 10px; }
     .header-logo {
       width: 30px; height: 30px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      background: var(--prominent-bg);
       border-radius: var(--radius-sm);
       display: flex; align-items: center; justify-content: center;
       font-size: 15px;
@@ -331,7 +342,7 @@
     }
     .header-title {
       font-size: 0.95rem; font-weight: 600; letter-spacing: -0.01em;
-      background: linear-gradient(135deg, var(--text-primary), var(--accent2));
+      background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
     .header-subtitle { font-size: 0.68rem; color: var(--text-muted); margin-top: 1px; }
@@ -398,7 +409,7 @@
     }
     .form-group input:focus {
       border-color: rgba(255, 255, 255, 0.28); background: rgba(255, 255, 255, 0.11);
-      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.18), 0 0 0 3px rgba(217, 119, 87, 0.35);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.18), 0 0 0 3px rgba(255, 255, 255, 0.16);
     }
     .form-group input::placeholder { color: var(--text-muted); }
     .form-actions { display: flex; gap: 8px; margin-top: 16px; }
@@ -409,13 +420,14 @@
     }
     .btn:active { transform: scale(0.96); }
     .btn-primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: #fff; border: 1px solid rgba(255, 255, 255, 0.18);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 4px 14px rgba(0, 0, 0, 0.22);
+      background: var(--prominent-bg);
+      color: var(--prominent-text); border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: var(--prominent-shadow);
     }
     .btn-primary:hover {
       transform: translateY(-1px);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 20px rgba(0, 0, 0, 0.3);
+      background: var(--prominent-hover);
+      box-shadow: inset 0 1px 0 #fff, 0 8px 22px rgba(0, 0, 0, 0.3);
     }
     .btn-secondary {
       background: rgba(255, 255, 255, 0.10); color: var(--text-primary); border: 1px solid rgba(255, 255, 255, 0.10);
@@ -462,7 +474,8 @@
     #left-search-outer:focus-within {
       background: rgba(255, 255, 255, 0.12);
     }
-    #left-search-icon { font-size: 12px; color: var(--text-muted); margin-right: 7px; }
+    #left-search-icon { display: inline-flex; color: var(--text-muted); margin-right: 7px; }
+    #left-search-icon .ico { width: 14px; height: 14px; }
     #left-search-input {
       flex: 1; background: none; border: none; outline: none;
       font-family: var(--font); font-size: 0.78rem;
@@ -471,9 +484,10 @@
     #left-search-input::placeholder { color: var(--text-muted); }
     #left-search-clear {
       background: none; border: none; color: var(--text-muted);
-      cursor: pointer; font-size: 12px; padding: 1px; display: none;
+      cursor: pointer; padding: 1px; display: none;
       transition: color var(--transition);
     }
+    #left-search-clear .ico { width: 14px; height: 14px; display: block; }
     #left-search-clear:hover { color: var(--text-primary); }
     #left-search-clear.visible { display: block; }
 
@@ -487,7 +501,8 @@
       flex: 1; display: flex; flex-direction: column;
     }
     .apps-letter-header {
-      font-size: 0.8rem; font-weight: 700; color: var(--accent);
+      font-size: 0.72rem; font-weight: 600; color: rgba(255, 255, 255, 0.5);
+      letter-spacing: 0.04em;
       margin: 16px 0 6px 4px;
     }
     .alpha-name-item {
@@ -507,15 +522,7 @@
       transform: translateX(3px);
     }
     .alpha-name-item:active { transform: scale(0.98); }
-    .list-favicon-wrap {
-      width: 26px; height: 26px; border-radius: 8px;
-      background: rgba(255, 255, 255, 0.92);
-      display: flex; align-items: center; justify-content: center;
-      overflow: hidden; flex-shrink: 0;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-    }
-    .list-favicon-wrap .icon-favicon-letter { -webkit-text-fill-color: #1c1c1e; background: none; }
-    .list-favicon-wrap img { width: 16px; height: 16px; object-fit: contain; }
+    .list-favicon-wrap { width: 28px; height: 28px; border-radius: 8px; }
     .list-favicon-wrap .icon-favicon-letter { font-size: 13px; font-weight: 600; }
     .alpha-name-item.is-fav .alpha-name-star { opacity: 1; }
 
@@ -622,22 +629,35 @@
       pointer-events: none; z-index: 1;
     }
 
-    /* iOS-style app tile */
-    .icon-favicon-wrap {
-      width: 50px; height: 50px; border-radius: 14px;
-      background: linear-gradient(180deg, #ffffff, #ececf0);
+    /* Website icon tile — adapts to the icon (see analyzeIcon in JS):
+       data-icon="full"  icon brings its own background → fills the tile
+       data-icon="tint"  transparent icon → glass tinted with its colour
+       data-icon="light" dark transparent icon → light tile so it stays visible */
+    .favicon-tile {
       display: flex; align-items: center; justify-content: center;
       overflow: hidden; flex-shrink: 0;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28), inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+      position: relative;
+      background: rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 3px 10px rgba(0, 0, 0, 0.22);
+    }
+    .favicon-tile img { width: 66%; height: 66%; object-fit: contain; }
+    .favicon-tile[data-icon="full"] { background: none; }
+    .favicon-tile[data-icon="full"] img { width: 100%; height: 100%; object-fit: cover; }
+    .favicon-tile[data-icon="light"] { background: linear-gradient(180deg, #ffffff, #e9e9ee); }
+    .favicon-tile[data-icon="tint"] {
+      background: linear-gradient(160deg, rgba(var(--tint), 0.42), rgba(var(--tint), 0.16));
+    }
+    .favicon-tile[data-icon="tint"] img { filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25)); }
+
+    .icon-favicon-wrap {
+      width: 52px; height: 52px; border-radius: 15px;
       transition: transform 0.45s var(--spring);
-      position: relative; z-index: 1;
+      z-index: 1;
     }
     .icon-card:hover .icon-favicon-wrap { transform: scale(1.05); }
-    .icon-favicon-wrap img { width: 28px; height: 28px; object-fit: contain; }
     .icon-favicon-letter {
-      font-size: 21px; font-weight: 700;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      font-size: 21px; font-weight: 600;
+      color: rgba(255, 255, 255, 0.95);
     }
     .icon-name {
       font-size: 0.7rem; font-weight: 500; color: rgba(255, 255, 255, 0.92);
@@ -693,7 +713,9 @@
       cursor: pointer; width: 100%; text-align: left;
       transition: background var(--transition), color var(--transition);
     }
-    .ctx-item .ctx-icon { font-size: 14px; flex-shrink: 0; width: 18px; text-align: center; }
+    .ctx-item .ctx-icon { display: inline-flex; flex-shrink: 0; width: 18px; color: var(--text-secondary); }
+    .ctx-item:hover .ctx-icon { color: var(--text-primary); }
+    .ctx-item.ctx-danger .ctx-icon { color: inherit; }
     .ctx-item:hover { background: var(--glass-soft); color: var(--text-primary); }
     .ctx-item.fav-add:hover  { background: var(--glass-soft); color: var(--text-primary); }
     .ctx-item.ctx-open:hover { background: var(--glass-soft); color: var(--text-primary); }
@@ -818,11 +840,20 @@
       gap: 4px;
     }
     .settings-action-icon {
-      font-size: 14px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 18px;
+      width: 28px; height: 28px;
+      border-radius: 9px;
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.10);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+      color: rgba(255, 255, 255, 0.92);
+    }
+    .ico {
+      width: 16px; height: 16px; flex-shrink: 0;
+      fill: none; stroke: currentColor; stroke-width: 1.8;
+      stroke-linecap: round; stroke-linejoin: round;
     }
 
     /* ─── Category Bar (top center) ──────────────────────────────────── */
@@ -863,10 +894,10 @@
     }
     .cat-pill:active { transform: scale(0.94); }
     .cat-pill.active {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: #fff;
+      background: var(--prominent-bg);
+      color: var(--prominent-text);
       font-weight: 600;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 3px 10px rgba(0, 0, 0, 0.28);
+      box-shadow: var(--prominent-shadow);
     }
     .cat-pill.cat-add {
       font-size: 1.05rem;
@@ -938,15 +969,15 @@
     }
     .cat-check svg {
       width: 14px; height: 14px;
-      fill: none; stroke: #fff; stroke-width: 3.2;
+      fill: none; stroke: var(--prominent-text); stroke-width: 3.2;
       stroke-linecap: round; stroke-linejoin: round;
       stroke-dasharray: 26; stroke-dashoffset: 26;
       transition: stroke-dashoffset 0.3s cubic-bezier(0.65, 0, 0.35, 1);
     }
     .cat-row-toggle.selected .cat-check,
     .cat-app-row.selected .cat-check {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border-color: transparent;
+      background: #fff;
+      border-color: #fff;
       animation: checkPop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     .cat-row-toggle.selected .cat-check svg,
@@ -975,8 +1006,8 @@
     }
     .cat-row-del {
       background: none; border: none; color: var(--text-muted);
-      cursor: pointer; font-size: 13px; padding: 4px 6px;
-      border-radius: 8px; flex-shrink: 0; line-height: 1;
+      cursor: pointer; padding: 5px;
+      border-radius: 8px; flex-shrink: 0; line-height: 0;
       transition: background var(--transition), color var(--transition);
     }
     .cat-row-del:hover { color: var(--danger); background: var(--danger-soft); }
@@ -993,7 +1024,7 @@
       transition: all var(--transition);
     }
     .cat-new-row input:focus {
-      border-color: var(--accent);
+      border-color: rgba(255, 255, 255, 0.28);
       background: rgba(255, 255, 255, 0.08);
     }
     .cat-new-row input::placeholder { color: var(--text-muted); }
@@ -1052,9 +1083,9 @@
     }
     .cat-detail-plus:hover { background: rgba(255, 255, 255, 0.13); }
     .cat-detail-plus.active {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border-color: rgba(255, 255, 255, 0.15);
-      color: #fff; transform: rotate(45deg);
+      background: var(--prominent-bg);
+      border-color: rgba(255, 255, 255, 0.6);
+      color: var(--prominent-text); transform: rotate(45deg);
     }
     .cat-detail-list {
       display: flex; flex-direction: column; gap: 5px;
@@ -1068,10 +1099,8 @@
       border: 1px solid rgba(255, 255, 255, 0.06);
       transition: background var(--transition), border-color var(--transition);
     }
-    .cat-app-row .cat-app-icon {
-      width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
-      object-fit: contain; background: rgba(255, 255, 255, 0.9);
-    }
+    .cat-app-row .cat-app-icon { width: 24px; height: 24px; border-radius: 7px; }
+    .cat-app-icon .icon-favicon-letter { font-size: 11px; }
     .cat-app-name {
       flex: 1; min-width: 0; font-size: 0.85rem; color: var(--text-primary);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -1090,8 +1119,9 @@
       transition: all var(--transition); white-space: nowrap;
     }
     .form-cat-chip.selected {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border-color: rgba(255, 255, 255, 0.15); color: #fff;
+      background: var(--prominent-bg);
+      border-color: rgba(255, 255, 255, 0.6); color: var(--prominent-text);
+      box-shadow: var(--prominent-shadow);
     }
 
     /* ─── Settings popup: tap-to-open (mobile) ───────────────────────── */
@@ -1105,11 +1135,9 @@
     .header-subtitle,
     #bookmark-count,
     .panel-header,
-    #left-search-icon,
     #fav-empty,
     .alpha-name-star,
     .icon-fav-star,
-    .ctx-icon,
     .ctx-label,
     #toast-icon {
       display: none !important;
@@ -1122,8 +1150,7 @@
       #main-layout { padding: 24px 40px; gap: 28px; }
       #fav-grid { max-width: 860px; gap: 20px; }
       .icon-card { width: 108px; }
-      .icon-favicon-wrap { width: 56px; height: 56px; }
-      .icon-favicon-wrap img { width: 32px; height: 32px; }
+      .icon-favicon-wrap { width: 58px; height: 58px; border-radius: 16px; }
       #cat-detail { width: min(460px, calc(100vw - 24px)); }
     }
     @media (min-width: 2100px) {
@@ -1141,7 +1168,8 @@
       /* Fixed viewport — each column scrolls on its own, the page does not */
       body { height: 100dvh; overflow: hidden; }
 
-      #app-header { position: fixed; padding: 10px 12px 6px; }
+      /* Above the floating + button so the settings menu is never covered */
+      #app-header { position: fixed; padding: 10px 12px 6px; z-index: 130; }
       #category-bar {
         max-width: calc(100vw - 96px);
         top: 8px;
@@ -1251,21 +1279,21 @@
       </div>
       <div class="settings-popup">
         <div class="settings-popup-label">Hintergrund</div>
-        <div class="bg-images-grid" id="bg-grid"></div>
+        <div id="bg-groups"></div>
 
         <div class="settings-popup-divider"></div>
         <div class="settings-popup-label">Geräte &amp; Sicherung</div>
         <div class="settings-data-actions">
           <button class="settings-popup-item" id="btn-transfer">
-            <span class="settings-action-icon">📲</span> Auf anderes Gerät übertragen
+            <span class="settings-action-icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg></span> Auf anderes Gerät übertragen
           </button>
           <button class="settings-popup-item" id="btn-autobackup" hidden>
-            <span class="settings-action-icon">💾</span>
+            <span class="settings-action-icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg></span>
             <span id="autobackup-label">Automatische Sicherung einrichten</span>
             <span class="settings-status-dot" id="autobackup-dot"></span>
           </button>
           <button class="settings-popup-item" id="btn-restore" hidden>
-            <span class="settings-action-icon">↺</span> Aus Sicherungsdatei wiederherstellen
+            <span class="settings-action-icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg></span> Aus Sicherungsdatei wiederherstellen
           </button>
           <div class="settings-hint" id="autobackup-hint"></div>
         </div>
@@ -1274,7 +1302,7 @@
           <div class="settings-popup-divider"></div>
           <div class="settings-popup-label">App</div>
           <button class="settings-popup-item" id="btn-install" hidden>
-            <span class="settings-action-icon">⬇</span> Als App installieren
+            <span class="settings-action-icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 13V7"/><path d="m15 10-3 3-3-3"/><rect width="20" height="14" x="2" y="3" rx="2"/><path d="M12 17v4"/><path d="M8 21h8"/></svg></span> Als App installieren
           </button>
           <div class="settings-hint" id="install-hint"></div>
         </div>
@@ -1314,9 +1342,9 @@
     <!-- Search inside card -->
     <div id="left-search-wrap">
       <div id="left-search-outer">
-        <span id="left-search-icon">⌕</span>
+        <span id="left-search-icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
         <input type="search" id="left-search-input" placeholder="Suchen…" autocomplete="off" aria-label="Lesezeichen suchen" />
-        <button id="left-search-clear" aria-label="Suche löschen">✕</button>
+        <button id="left-search-clear" aria-label="Suche löschen"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
       </div>
     </div>
     <!-- Alphabet + Names -->
@@ -1354,20 +1382,20 @@
   <div class="ctx-label">Optionen</div>
   <div class="ctx-bm-name" id="ctx-bm-name"></div>
   <button class="ctx-item ctx-open" id="ctx-open" role="menuitem">
-    <span class="ctx-icon">↗</span> Im Browser öffnen
+    <span class="ctx-icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></span> Im Browser öffnen
   </button>
   <div class="ctx-divider"></div>
   <button class="ctx-item fav-add" id="ctx-fav" role="menuitem">
-    <span class="ctx-icon" id="ctx-fav-icon">⭐</span>
+    <span class="ctx-icon" id="ctx-fav-icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg></span>
     <span id="ctx-fav-label">Zu Favoriten hinzufügen</span>
   </button>
   <div class="ctx-divider"></div>
   <button class="ctx-item ctx-cat" id="ctx-cat" role="menuitem">
-    <span class="ctx-icon">🏷</span> Kategorien zuweisen
+    <span class="ctx-icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5"/></svg></span> Kategorien zuweisen
   </button>
   <div class="ctx-divider"></div>
   <button class="ctx-item ctx-danger" id="ctx-del" role="menuitem">
-    <span class="ctx-icon">🗑</span> Entfernen
+    <span class="ctx-icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></span> Entfernen
   </button>
 </div>
 
@@ -1576,9 +1604,95 @@ function sorted(list) {
   return [...list].sort((a, b) => a.name.localeCompare(b.name, 'de', { sensitivity: 'base' }));
 }
 
+const ICON_X = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
+
+// ── Website icons ─────────────────────────────────────────────────────
+// Icons come through our own /api/icon proxy (same origin), so the
+// canvas may read their pixels and the tile can adapt to each icon.
+const ICON_META_KEY  = 'webfavs_iconmeta';
+const USE_ICON_PROXY = location.protocol.startsWith('http');
+let iconMeta = {};
+try { iconMeta = JSON.parse(localStorage.getItem(ICON_META_KEY)) || {}; } catch { iconMeta = {}; }
+let iconMetaTimer = null;
+
 function getFaviconUrl(url) {
-  try { return `https://www.google.com/s2/favicons?domain=${new URL(url).origin}&sz=64`; }
-  catch { return null; }
+  try {
+    const host = new URL(url).hostname;
+    return USE_ICON_PROXY
+      ? `api/icon?domain=${encodeURIComponent(host)}`
+      : `https://www.google.com/s2/favicons?domain=${encodeURIComponent('https://' + host)}&sz=128`;
+  } catch { return null; }
+}
+
+// Decides how an icon should sit in its tile by looking at its pixels.
+function analyzeIcon(img) {
+  const S = 48;
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = S;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(img, 0, 0, S, S);
+  const px = ctx.getImageData(0, 0, S, S).data;   // throws for cross-origin images
+
+  let edge = 0, edgeOpaque = 0, r = 0, g = 0, b = 0, n = 0;
+  const corner = S * 0.22;   // ignore rounded corners when judging the edge
+  for (let y = 0; y < S; y++) {
+    for (let x = 0; x < S; x++) {
+      const i = (y * S + x) * 4, a = px[i + 3];
+      const onEdge = x < 2 || y < 2 || x >= S - 2 || y >= S - 2;
+      const inCorner = (x < corner || x >= S - corner) && (y < corner || y >= S - corner);
+      if (onEdge && !inCorner) { edge++; if (a > 200) edgeOpaque++; }
+      if (a > 128) { r += px[i]; g += px[i + 1]; b += px[i + 2]; n++; }
+    }
+  }
+  // Icon paints its own background all the way to the edge → let it fill the tile
+  if (edge && edgeOpaque / edge > 0.9) return { mode: 'full' };
+  if (!n) return { mode: 'light' };
+  r = Math.round(r / n); g = Math.round(g / n); b = Math.round(b / n);
+  const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  const sat = (Math.max(r, g, b) - Math.min(r, g, b)) / 255;
+  // Dark, colourless marks (GitHub, Notion, …) would vanish on dark glass
+  if (lum < 0.3 && sat < 0.25) return { mode: 'light' };
+  return { mode: 'tint', tint: `${r}, ${g}, ${b}` };
+}
+
+function applyIconMeta(tile, meta) {
+  tile.dataset.icon = meta.mode;
+  if (meta.tint) tile.style.setProperty('--tint', meta.tint);
+}
+
+function rememberIconMeta(host, meta) {
+  iconMeta[host] = meta;
+  clearTimeout(iconMetaTimer);
+  iconMetaTimer = setTimeout(() => {
+    try { localStorage.setItem(ICON_META_KEY, JSON.stringify(iconMeta)); } catch { /* quota */ }
+  }, 400);
+}
+
+function createFavicon(bm, className) {
+  const tile = document.createElement('span');
+  tile.className = 'favicon-tile ' + className;
+  const src = getFaviconUrl(bm.url);
+  if (!src) { addFallbackLetter(tile, bm.name); return tile; }
+
+  const host = new URL(bm.url).hostname;
+  if (iconMeta[host]) applyIconMeta(tile, iconMeta[host]);
+
+  const img = document.createElement('img');
+  img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
+  img.onerror = () => { img.remove(); delete tile.dataset.icon; addFallbackLetter(tile, bm.name); };
+  img.onload = () => {
+    if (iconMeta[host]) return;
+    try {
+      const meta = analyzeIcon(img);
+      applyIconMeta(tile, meta);
+      rememberIconMeta(host, meta);
+    } catch {
+      applyIconMeta(tile, { mode: 'light' });   // pixels unreadable — safe default
+    }
+  };
+  img.src = src;
+  tile.appendChild(img);
+  return tile;
 }
 
 function groupByLetter(list) {
@@ -1652,18 +1766,7 @@ function renderLeftPanel() {
         a.dataset.id = bm.id;
         a.title = bm.url;
 
-        // Favicon wrap
-        const wrap = document.createElement('div');
-        wrap.className = 'list-favicon-wrap';
-        const favUrl = getFaviconUrl(bm.url);
-        if (favUrl) {
-          const img = document.createElement('img');
-          img.src = favUrl; img.alt = ''; img.loading = 'lazy';
-          img.onerror = () => { img.remove(); addFallbackLetter(wrap, bm.name); };
-          wrap.appendChild(img);
-        } else {
-          addFallbackLetter(wrap, bm.name);
-        }
+        const wrap = createFavicon(bm, 'list-favicon-wrap');
 
         const txt = document.createElement('span');
         txt.className = 'alpha-name-text';
@@ -1750,18 +1853,7 @@ function createIconCard(bm, idx) {
   starBadge.className = 'icon-fav-star';
   starBadge.textContent = '★';
 
-  // Favicon
-  const wrap = document.createElement('div');
-  wrap.className = 'icon-favicon-wrap';
-  const favUrl = getFaviconUrl(bm.url);
-  if (favUrl) {
-    const img = document.createElement('img');
-    img.src = favUrl; img.alt = ''; img.loading = 'lazy';
-    img.onerror = () => { img.remove(); addFallbackLetter(wrap, bm.name); };
-    wrap.appendChild(img);
-  } else {
-    addFallbackLetter(wrap, bm.name);
-  }
+  const wrap = createFavicon(bm, 'icon-favicon-wrap');
 
   // Name
   const nameEl = document.createElement('div');
@@ -1822,12 +1914,10 @@ function showCtxMenu(e, id) {
   ctxBmName.textContent = bm.name;
 
   if (bm.favorite) {
-    ctxFavIcon.textContent  = '';
     ctxFavLabel.textContent = 'Aus Favoriten entfernen';
     ctxFavBtn.classList.remove('fav-add');
     ctxFavBtn.style.setProperty('--ctx-fav-color', 'var(--text-muted)');
   } else {
-    ctxFavIcon.textContent  = '';
     ctxFavLabel.textContent = 'Zu Favoriten hinzufügen';
     ctxFavBtn.classList.add('fav-add');
   }
@@ -2098,7 +2188,7 @@ function renderCatModalList() {
 
     const del = document.createElement('button');
     del.className = 'cat-row-del';
-    del.textContent = '✕';
+    del.innerHTML = ICON_X;
     del.title = 'Kategorie löschen';
     del.setAttribute('aria-label', 'Kategorie löschen');
     del.addEventListener('click', (e) => {
@@ -2222,7 +2312,7 @@ function renderCatDetail() {
       row.appendChild(check);
     }
 
-    row.appendChild(makeAppIcon(bm));
+    row.appendChild(createFavicon(bm, 'cat-app-icon'));
 
     const name = document.createElement('span');
     name.className = 'cat-app-name';
@@ -2246,7 +2336,7 @@ function renderCatDetail() {
       // Member list: throw the app out of this category
       const del = document.createElement('button');
       del.className = 'cat-row-del';
-      del.textContent = '✕';
+      del.innerHTML = ICON_X;
       del.title = 'Aus Kategorie entfernen';
       del.setAttribute('aria-label', `${bm.name} aus Kategorie entfernen`);
       del.addEventListener('click', e => {
@@ -2261,32 +2351,6 @@ function renderCatDetail() {
 
     catDetailList.appendChild(row);
   });
-}
-
-function makeAppIcon(bm) {
-  const favUrl = getFaviconUrl(bm.url);
-  if (favUrl) {
-    const img = document.createElement('img');
-    img.className = 'cat-app-icon';
-    img.src = favUrl; img.alt = ''; img.loading = 'lazy';
-    img.onerror = () => {
-      const ph = document.createElement('span');
-      ph.className = 'cat-app-icon';
-      ph.style.cssText =
-        'display:flex;align-items:center;justify-content:center;font-size:11px;' +
-        'font-weight:700;color:#1c1a18;';
-      ph.textContent = (bm.name[0] || '?').toUpperCase();
-      img.replaceWith(ph);
-    };
-    return img;
-  }
-  const ph = document.createElement('span');
-  ph.className = 'cat-app-icon';
-  ph.style.cssText =
-    'display:flex;align-items:center;justify-content:center;font-size:11px;' +
-    'font-weight:700;color:#1c1a18;';
-  ph.textContent = (bm.name[0] || '?').toUpperCase();
-  return ph;
 }
 
 catDetailToggle.addEventListener('click', () => setCatDetailMode(!catDetailAddMode));
@@ -2434,18 +2498,28 @@ document.addEventListener('click', () => settingsContainer.classList.remove('ope
 const BG_KEY     = 'webfavs_bg';
 const DEFAULT_BG = 'office-skyline';
 const BACKGROUNDS = [
-  { id: 'office-skyline',      title: 'Skyline-Büro' },
-  { id: 'office-executive',    title: 'Chefbüro' },
-  { id: 'office-boardroom',    title: 'Boardroom' },
-  { id: 'office-cityview',     title: 'Weitblick' },
-  { id: 'office-meeting',      title: 'Besprechung' },
-  { id: 'office-glass',        title: 'Glasbüros' },
-  { id: 'office-loft',         title: 'Office-Loft' },
-  { id: 'office-lounge-night', title: 'Lounge am Abend' },
-  { id: 'office-desk-lamp',    title: 'Feierabend' },
-  { id: 'office-tower-night',  title: 'Tower bei Nacht' },
+  { id: 'office-skyline',         title: 'Skyline-Büro',     group: 'Büro' },
+  { id: 'office-executive',       title: 'Chefbüro',         group: 'Büro' },
+  { id: 'office-boardroom',       title: 'Boardroom',        group: 'Büro' },
+  { id: 'office-cityview',        title: 'Weitblick',        group: 'Büro' },
+  { id: 'office-meeting',         title: 'Besprechung',      group: 'Büro' },
+  { id: 'office-glass',           title: 'Glasbüros',        group: 'Büro' },
+  { id: 'office-loft',            title: 'Office-Loft',      group: 'Büro' },
+  { id: 'office-lounge-night',    title: 'Lounge am Abend',  group: 'Büro' },
+  { id: 'office-desk-lamp',       title: 'Feierabend',       group: 'Büro' },
+  { id: 'office-tower-night',     title: 'Tower bei Nacht',  group: 'Büro' },
+  { id: 'nature-fog-valley',      title: 'Nebeltal',         group: 'Natur & Interior' },
+  { id: 'nature-misty-forest',    title: 'Nebelwald',        group: 'Natur & Interior' },
+  { id: 'nature-alpine-lake',     title: 'Bergsee',          group: 'Natur & Interior' },
+  { id: 'nature-lake-reflection', title: 'Spiegelsee',       group: 'Natur & Interior' },
+  { id: 'nature-dune',            title: 'Düne',             group: 'Natur & Interior' },
+  { id: 'interior-minimal',       title: 'Minimal Living',   group: 'Natur & Interior' },
+  { id: 'interior-japandi',       title: 'Japandi',          group: 'Natur & Interior' },
+  { id: 'interior-dining',        title: 'Fensterplatz',     group: 'Natur & Interior' },
+  { id: 'interior-light',         title: 'Lichtspiel',       group: 'Natur & Interior' },
+  { id: 'interior-library',       title: 'Lese-Ecke',        group: 'Natur & Interior' },
 ];
-const bgGrid = document.getElementById('bg-grid');
+const bgGroups = document.getElementById('bg-groups');
 
 function currentBgId() {
   const id = localStorage.getItem(BG_KEY);
@@ -2456,13 +2530,22 @@ function currentBgId() {
 function applyBackground() {
   const id = currentBgId();
   document.documentElement.style.setProperty('--bg-image', `url('backgrounds/${id}.jpg')`);
-  bgGrid.querySelectorAll('.bg-image-preview').forEach(el =>
+  bgGroups.querySelectorAll('.bg-image-preview').forEach(el =>
     el.classList.toggle('selected', el.dataset.bg === id));
 }
 
 function renderBackgroundGrid() {
-  bgGrid.innerHTML = '';
+  bgGroups.innerHTML = '';
+  const grids = {};
   BACKGROUNDS.forEach(bg => {
+    if (!grids[bg.group]) {
+      const label = document.createElement('div');
+      label.className = 'bg-group-label';
+      label.textContent = bg.group;
+      grids[bg.group] = document.createElement('div');
+      grids[bg.group].className = 'bg-images-grid';
+      bgGroups.append(label, grids[bg.group]);
+    }
     const btn = document.createElement('button');
     btn.className = 'bg-image-preview';
     btn.dataset.bg = bg.id;
@@ -2477,7 +2560,7 @@ function renderBackgroundGrid() {
       applyBackground();
       scheduleFileBackup();
     });
-    bgGrid.appendChild(btn);
+    grids[bg.group].appendChild(btn);
   });
 }
 
