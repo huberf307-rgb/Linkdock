@@ -630,25 +630,56 @@
       pointer-events: none; z-index: 1;
     }
 
-    /* Website icon tile — adapts to the icon (see analyzeIcon in JS):
-       data-icon="full"  icon brings its own background → fills the tile
-       data-icon="tint"  transparent icon → glass tinted with its colour
-       data-icon="light" dark transparent icon → light tile so it stays visible */
+    /* Website icon tile — a piece of Liquid Glass holding the site's glyph
+       (see makeGlyph in JS):
+       data-icon="tint"  glass coloured in the brand colour
+       data-icon="glass" neutral clear glass, white glyph
+       data-icon="inset" logo with photo/gradient background set into the glass
+       data-icon="light" fallback when the logo's pixels can't be read */
     .favicon-tile {
       display: flex; align-items: center; justify-content: center;
       overflow: hidden; flex-shrink: 0;
       position: relative;
-      background: rgba(255, 255, 255, 0.12);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 3px 10px rgba(0, 0, 0, 0.22);
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.20), rgba(255, 255, 255, 0.07));
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.45),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.10),
+        0 4px 12px rgba(0, 0, 0, 0.25);
+      transition: background 0.3s var(--ease-out);
     }
-    .favicon-tile img { width: 66%; height: 66%; object-fit: contain; }
-    .favicon-tile[data-icon="full"] { background: none; }
-    .favicon-tile[data-icon="full"] img { width: 100%; height: 100%; object-fit: cover; }
-    .favicon-tile[data-icon="light"] { background: linear-gradient(180deg, #ffffff, #e9e9ee); }
+    /* Specular sheen + thin glass rim over everything */
+    .favicon-tile::after {
+      content: '';
+      position: absolute; inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(155deg,
+        rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.07) 36%,
+        rgba(255, 255, 255, 0) 55%, rgba(255, 255, 255, 0.06) 100%);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+      pointer-events: none;
+    }
+    .favicon-tile img {
+      width: 58%; height: 58%; object-fit: contain;
+      filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.3));
+      opacity: 0;
+      transform: scale(0.85);
+      transition: opacity 0.3s var(--ease-out), transform 0.45s var(--spring);
+    }
+    .favicon-tile.ready img { opacity: 1; transform: none; }
     .favicon-tile[data-icon="tint"] {
-      background: linear-gradient(160deg, rgba(var(--tint), 0.42), rgba(var(--tint), 0.16));
+      background:
+        radial-gradient(120% 90% at 30% 15%, rgba(var(--tint), 0.62), rgba(var(--tint), 0.22) 70%),
+        rgba(20, 20, 24, 0.35);
     }
-    .favicon-tile[data-icon="tint"] img { filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25)); }
+    .favicon-tile[data-icon="glass"] {
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.08));
+    }
+    .favicon-tile[data-icon="inset"] {
+      background: linear-gradient(160deg, rgba(var(--tint), 0.5), rgba(var(--tint), 0.18));
+    }
+    .favicon-tile[data-icon="inset"] img { width: 70%; height: 70%; border-radius: 24%; filter: none; }
+    .favicon-tile[data-icon="light"] { background: linear-gradient(180deg, #ffffff, #e9e9ee); }
+    .favicon-tile[data-icon="light"] img { width: 66%; height: 66%; filter: none; }
 
     .icon-favicon-wrap {
       width: 52px; height: 52px; border-radius: 15px;
@@ -1609,19 +1640,27 @@ function sorted(list) {
 const ICON_X = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
 
 // ── Website icons ─────────────────────────────────────────────────────
-// Sources are tried in order until one loads:
-//   proxy  our own /api/icon (Vercel / Cloudflare function, same origin)
+// Every logo is turned into a Liquid Glass glyph: a solid background the
+// icon brings along (Claude's orange, Gmail's white, …) is taken out and
+// becomes the colour of the glass tile; dark one-colour marks turn white.
+//
+// Sources are tried in order until one loads (same order on every host,
+// so Vercel and Cloudflare show identical icons):
 //   horse  icon.horse — public, CORS-enabled, mostly large app icons
+//   proxy  our own /api/icon (Vercel / Cloudflare function, same origin)
 //   google Google's favicon service — always there, but pixels unreadable
-// The first two let the canvas read the pixels so the tile can adapt.
-const ICON_META_KEY = 'webfavs_iconmeta';
+const ICON_META_KEY = 'linkdock_iconmeta';
 let iconMeta = {};
-try { iconMeta = JSON.parse(localStorage.getItem(ICON_META_KEY)) || {}; } catch { iconMeta = {}; }
+try {
+  iconMeta = JSON.parse(localStorage.getItem(ICON_META_KEY)) || {};
+  localStorage.removeItem('webfavs_iconmeta');   // results of the old analysis
+} catch { iconMeta = {}; }
 let iconMetaTimer = null;
+const glyphCache = new Map();   // host → { meta, src } for this session
 
 const ICON_SOURCES = {
-  proxy:  host => ({ src: `api/icon?domain=${encodeURIComponent(host)}`, cors: false, readable: true }),
   horse:  host => ({ src: `https://icon.horse/icon/${encodeURIComponent(host)}`, cors: true, readable: true }),
+  proxy:  host => ({ src: `api/icon?domain=${encodeURIComponent(host)}`, cors: false, readable: true }),
   google: host => ({ src: `https://www.google.com/s2/favicons?domain=${encodeURIComponent('https://' + host)}&sz=128`, cors: false, readable: false }),
 };
 
@@ -1641,38 +1680,190 @@ const iconProxyReady = (() => {
     });
 })();
 
-// Analysis results differ per source; proxy results keep the plain host key.
-const iconMetaKey = (kind, host) => kind === 'proxy' ? host : `${kind}:${host}`;
+const GLYPH = 128;   // working resolution in px
 
-// Decides how an icon should sit in its tile by looking at its pixels.
-function analyzeIcon(img) {
-  const S = 48;
-  const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = S;
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  ctx.drawImage(img, 0, 0, S, S);
-  const px = ctx.getImageData(0, 0, S, S).data;   // throws for cross-origin images
+const lumOf = ([r, g, b]) => (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+const satOf = ([r, g, b]) => (Math.max(r, g, b) - Math.min(r, g, b)) / 255;
+const rgbStr = c => c.map(Math.round).join(', ');
 
-  let edge = 0, edgeOpaque = 0, r = 0, g = 0, b = 0, n = 0;
-  const corner = S * 0.22;   // ignore rounded corners when judging the edge
-  for (let y = 0; y < S; y++) {
-    for (let x = 0; x < S; x++) {
-      const i = (y * S + x) * 4, a = px[i + 3];
-      const onEdge = x < 2 || y < 2 || x >= S - 2 || y >= S - 2;
-      const inCorner = (x < corner || x >= S - corner) && (y < corner || y >= S - corner);
-      if (onEdge && !inCorner) { edge++; if (a > 200) edgeOpaque++; }
-      if (a > 128) { r += px[i]; g += px[i + 1]; b += px[i + 2]; n++; }
+// Colour of a solid background reaching all four edges (rounded corners
+// ignored); null when the edges are transparent, 'mixed' for gradients/photos.
+function solidBackground(px) {
+  const S = GLYPH, corner = S * 0.22;
+  let n = 0, sum = [0, 0, 0];
+  const opaque = [];
+  for (let i = 0; i < S; i++) {
+    for (const [x, y] of [[i, 1], [i, S - 2], [1, i], [S - 2, i]]) {
+      if ((x < corner || x >= S - corner) && (y < corner || y >= S - corner)) continue;
+      n++;
+      const k = (y * S + x) * 4;
+      if (px[k + 3] > 220) { opaque.push(k); for (let c = 0; c < 3; c++) sum[c] += px[k + c]; }
     }
   }
-  // Icon paints its own background all the way to the edge → let it fill the tile
-  if (edge && edgeOpaque / edge > 0.9) return { mode: 'full' };
-  if (!n) return { mode: 'light' };
-  r = Math.round(r / n); g = Math.round(g / n); b = Math.round(b / n);
-  const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-  const sat = (Math.max(r, g, b) - Math.min(r, g, b)) / 255;
-  // Dark, colourless marks (GitHub, Notion, …) would vanish on dark glass
-  if (lum < 0.3 && sat < 0.25) return { mode: 'light' };
-  return { mode: 'tint', tint: `${r}, ${g}, ${b}` };
+  if (!n || opaque.length / n < 0.9) return null;
+  const bg = sum.map(v => v / opaque.length);
+  const close = opaque.filter(k =>
+    Math.abs(px[k] - bg[0]) + Math.abs(px[k + 1] - bg[1]) + Math.abs(px[k + 2] - bg[2]) < 60).length;
+  return close / opaque.length > 0.9 ? bg : 'mixed';
+}
+
+// "Colour to alpha": removes the background colour exactly, so anti-aliased
+// edges stay smooth and keep their true colour.
+function removeBackground(px, bg) {
+  for (let k = 0; k < px.length; k += 4) {
+    const a0 = px[k + 3] / 255;
+    if (!a0) continue;
+    let a = 0;
+    for (let c = 0; c < 3; c++) {
+      const p = px[k + c], q = bg[c];
+      const ac = p > q ? (p - q) / (255 - q || 1) : p < q ? (q - p) / (q || 1) : 0;
+      if (ac > a) a = ac;
+    }
+    if (a < 0.08) { px[k + 3] = 0; continue; }
+    for (let c = 0; c < 3; c++) px[k + c] = Math.max(0, Math.min(255, (px[k + c] - bg[c]) / a + bg[c]));
+    px[k + 3] = Math.round(a * a0 * 255);
+  }
+}
+
+// Bounding box and pixel count of everything visible
+function glyphBox(px) {
+  const S = GLYPH;
+  let x0 = S, y0 = S, x1 = -1, y1 = -1, count = 0;
+  for (let y = 0; y < S; y++) {
+    for (let x = 0; x < S; x++) {
+      if (px[(y * S + x) * 4 + 3] > 24) {
+        count++;
+        if (x < x0) x0 = x; if (x > x1) x1 = x;
+        if (y < y0) y0 = y; if (y > y1) y1 = y;
+      }
+    }
+  }
+  return x1 < 0 ? null : { x0, y0, x1, y1, w: x1 - x0 + 1, h: y1 - y0 + 1, count };
+}
+
+// Colour of the outline of a transparent icon's shape, if it is one solid
+// colour — the "plate" a logo sits on (white disc behind ChatGPT, …).
+function plateColour(px) {
+  const S = GLYPH;
+  const alphaAt = (x, y) => (x < 0 || y < 0 || x >= S || y >= S) ? 0 : px[(y * S + x) * 4 + 3];
+  const edge = [];
+  const sum = [0, 0, 0];
+  for (let y = 0; y < S; y++) {
+    for (let x = 0; x < S; x++) {
+      const k = (y * S + x) * 4;
+      if (px[k + 3] <= 220) continue;
+      if (alphaAt(x - 2, y) < 30 || alphaAt(x + 2, y) < 30 || alphaAt(x, y - 2) < 30 || alphaAt(x, y + 2) < 30) {
+        edge.push(k);
+        for (let c = 0; c < 3; c++) sum[c] += px[k + c];
+      }
+    }
+  }
+  if (edge.length < 20) return null;
+  const col = sum.map(v => v / edge.length);
+  const close = edge.filter(k =>
+    Math.abs(px[k] - col[0]) + Math.abs(px[k + 1] - col[1]) + Math.abs(px[k + 2] - col[2]) < 60).length;
+  return close / edge.length > 0.9 ? col : null;
+}
+
+// Takes a plate out only when a real glyph remains inside it; a logo that
+// is itself one colour (Claude's asterisk) would otherwise vanish.
+function removePlate(px) {
+  const plate = plateColour(px);
+  if (!plate) return null;
+  const trial = new Uint8ClampedArray(px);
+  removeBackground(trial, plate);
+  const before = glyphBox(px), after = glyphBox(trial);
+  if (!before || !after || after.count < before.count * 0.05) return null;
+  const mx = before.w * 0.08, my = before.h * 0.08;
+  const inside = after.x0 - before.x0 > mx && before.x1 - after.x1 > mx &&
+                 after.y0 - before.y0 > my && before.y1 - after.y1 > my;
+  if (!inside) return null;
+  px.set(trial);
+  return plate;
+}
+
+// Average colour plus the dominant hue of the clearly coloured pixels
+function glyphColours(px) {
+  let w = 0;
+  const avg = [0, 0, 0];
+  const bins = Array.from({ length: 12 }, () => ({ w: 0, c: [0, 0, 0] }));
+  for (let k = 0; k < px.length; k += 4) {
+    const a = px[k + 3] / 255;
+    if (a < 0.3) continue;
+    const c = [px[k], px[k + 1], px[k + 2]];
+    w += a;
+    for (let i = 0; i < 3; i++) avg[i] += c[i] * a;
+    const max = Math.max(...c), min = Math.min(...c), s = (max - min) / 255;
+    if (s < 0.3 || max < 50) continue;
+    let h;
+    if (max === c[0]) h = ((c[1] - c[2]) / (max - min) + 6) % 6;
+    else if (max === c[1]) h = (c[2] - c[0]) / (max - min) + 2;
+    else h = (c[0] - c[1]) / (max - min) + 4;
+    const bin = bins[Math.floor(h * 2) % 12];
+    bin.w += a;
+    for (let i = 0; i < 3; i++) bin.c[i] += c[i] * a;
+  }
+  if (!w) return null;
+  const top = bins.reduce((m, b) => (b.w > m.w ? b : m));
+  return {
+    avg: avg.map(v => v / w),
+    dominant: top.w / w > 0.12 ? top.c.map(v => v / top.w) : null,
+  };
+}
+
+// Turns a loaded logo into { meta, src } — src is the glass-ready glyph.
+function makeGlyph(img) {
+  const S = GLYPH;
+  const work = document.createElement('canvas');
+  work.width = work.height = S;
+  const wctx = work.getContext('2d', { willReadFrequently: true });
+  wctx.imageSmoothingQuality = 'high';
+  wctx.drawImage(img, 0, 0, S, S);
+  const data = wctx.getImageData(0, 0, S, S);   // throws for unreadable images
+  const px = data.data;
+
+  const bg = solidBackground(px);
+  if (bg === 'mixed') {
+    // Gradient or photo background: keep the icon, set it into tinted glass
+    const c = glyphColours(px);
+    return { meta: { mode: 'inset', tint: c ? rgbStr(c.avg) : null }, src: work.toDataURL() };
+  }
+  if (bg) removeBackground(px, bg);
+  const surface = bg || removePlate(px);
+
+  const colours = glyphColours(px);
+  if (!colours) return null;
+
+  let tint = null;
+  let whiten = false;
+  if (surface && satOf(surface) > 0.25 && lumOf(surface) > 0.1 && lumOf(surface) < 0.92) {
+    tint = surface;                          // the brand colour becomes the glass
+  } else if (colours.dominant) {
+    tint = colours.dominant;                 // colourful mark on neutral background
+  } else if (lumOf(colours.avg) < 0.55) {
+    whiten = true;                           // dark one-colour mark → white glyph
+  }
+  if (whiten) {
+    for (let k = 0; k < px.length; k += 4) { px[k] = px[k + 1] = px[k + 2] = 255; }
+  }
+
+  // Crop to the glyph so every logo ends up the same visual size
+  const box = glyphBox(px);
+  if (!box) return null;
+  wctx.putImageData(data, 0, 0);
+  const { x0, y0, w, h } = box;
+  const side = Math.max(w, h);
+  const out = document.createElement('canvas');
+  out.width = out.height = S;
+  const octx = out.getContext('2d');
+  octx.imageSmoothingQuality = 'high';
+  const scale = S / side;
+  octx.drawImage(work, x0, y0, w, h, (S - w * scale) / 2, (S - h * scale) / 2, w * scale, h * scale);
+
+  return {
+    meta: tint ? { mode: 'tint', tint: rgbStr(tint) } : { mode: 'glass' },
+    src: out.toDataURL(),
+  };
 }
 
 function applyIconMeta(tile, meta) {
@@ -1701,40 +1892,56 @@ function createFavicon(bm, className) {
   img.alt = ''; img.decoding = 'async';
   tile.appendChild(img);
 
+  // Already processed this session (re-renders, same site twice) → instant
+  const done = glyphCache.get(host);
+  if (done) {
+    applyIconMeta(tile, done.meta);
+    img.src = done.src;
+    tile.classList.add('ready');
+    return tile;
+  }
+  // Last known look while the logo loads — avoids a colour jump
+  if (iconMeta[host]) applyIconMeta(tile, iconMeta[host]);
+
   let queue = [];
   let kind = null;
+  let processed = false;
 
   const tryNext = () => {
     kind = queue.shift();
     if (!kind) {   // every source failed
-      img.remove(); delete tile.dataset.icon; addFallbackLetter(tile, bm.name);
+      img.remove(); delete tile.dataset.icon; tile.classList.add('ready');
+      addFallbackLetter(tile, bm.name);
       return;
     }
     const source = ICON_SOURCES[kind](host);
-    const cached = iconMeta[iconMetaKey(kind, host)];
-    if (cached) applyIconMeta(tile, cached); else delete tile.dataset.icon;
     // crossOrigin must be set before src, and only for CORS-enabled sources
     if (source.cors) img.crossOrigin = 'anonymous'; else img.removeAttribute('crossorigin');
     img.src = source.src;
   };
 
-  img.onerror = tryNext;
+  img.onerror = () => { if (!processed) tryNext(); };
   img.onload = () => {
-    const key = iconMetaKey(kind, host);
-    // Another tile of the same site may have analysed it in the meantime
-    if (iconMeta[key]) { applyIconMeta(tile, iconMeta[key]); return; }
-    if (!ICON_SOURCES[kind](host).readable) { applyIconMeta(tile, { mode: 'light' }); return; }
-    try {
-      const meta = analyzeIcon(img);
-      applyIconMeta(tile, meta);
-      rememberIconMeta(key, meta);
-    } catch {
-      applyIconMeta(tile, { mode: 'light' });   // pixels unreadable — safe default
+    if (processed) { tile.classList.add('ready'); return; }   // the glyph itself has loaded
+    processed = true;
+    let result = null;
+    if (ICON_SOURCES[kind](host).readable) {
+      try { result = makeGlyph(img); } catch { result = null; }
     }
+    if (!result) {   // pixels unreadable — show the logo as it is
+      applyIconMeta(tile, { mode: 'light' });
+      tile.classList.add('ready');
+      return;
+    }
+    glyphCache.set(host, result);
+    rememberIconMeta(host, result.meta);
+    applyIconMeta(tile, result.meta);
+    img.removeAttribute('crossorigin');
+    img.src = result.src;
   };
 
   iconProxyReady.then(proxyOk => {
-    queue = proxyOk ? ['proxy', 'horse', 'google'] : ['horse', 'google'];
+    queue = proxyOk ? ['horse', 'proxy', 'google'] : ['horse', 'google'];
     tryNext();
   });
   return tile;
