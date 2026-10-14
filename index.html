@@ -71,12 +71,14 @@
       --spring:        cubic-bezier(0.34, 1.56, 0.64, 1);
       --ease-out:      cubic-bezier(0.22, 1, 0.36, 1);
 
-      /* Prominent glass: the bright frosted fill Apple uses for the active
-         segment / primary action — replaces the old orange-blue gradient */
-      --prominent-bg:     linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(232, 232, 237, 0.92));
-      --prominent-hover:  linear-gradient(180deg, #ffffff, rgba(242, 242, 246, 0.96));
-      --prominent-text:   #1c1c1e;
-      --prominent-shadow: inset 0 1px 0 #fff, inset 0 -1px 0 rgba(0, 0, 0, 0.08), 0 4px 14px rgba(0, 0, 0, 0.25);
+      /* Prominent glass: a brighter, thicker piece of Liquid Glass for the
+         active segment / primary action */
+      --prominent-bg:     linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.12));
+      --prominent-hover:  linear-gradient(180deg, rgba(255, 255, 255, 0.44), rgba(255, 255, 255, 0.17));
+      --prominent-text:   #ffffff;
+      --prominent-border: rgba(255, 255, 255, 0.34);
+      --prominent-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -1px 0 rgba(255, 255, 255, 0.12),
+                          inset 0 0 14px rgba(255, 255, 255, 0.10), 0 4px 14px rgba(0, 0, 0, 0.25);
     }
 
     [data-theme="dark"] {
@@ -146,7 +148,7 @@
     /* Specular rim: bright top-left edge, fading around — the Apple glint */
     .icon-card::before, #add-btn::before, .settings-gear::before,
     #add-form-container::before, #ctx-menu::before, #toast::before,
-    #import-confirm-container::before, #transfer-modal::before, .cat-pill.active::before {
+    #import-confirm-container::before, #transfer-modal::before, .cat-indicator::before, .btn-primary::before {
       content: '';
       position: absolute; inset: 0;
       border-radius: inherit;
@@ -421,14 +423,16 @@
     }
     .btn:active { transform: scale(0.96); }
     .btn-primary {
+      position: relative;
       background: var(--prominent-bg);
-      color: var(--prominent-text); border: 1px solid rgba(255, 255, 255, 0.6);
+      color: var(--prominent-text); border: 1px solid var(--prominent-border);
       box-shadow: var(--prominent-shadow);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
     }
     .btn-primary:hover {
       transform: translateY(-1px);
       background: var(--prominent-hover);
-      box-shadow: inset 0 1px 0 #fff, 0 8px 22px rgba(0, 0, 0, 0.3);
+      box-shadow: var(--prominent-shadow), 0 8px 22px rgba(0, 0, 0, 0.3);
     }
     .btn-secondary {
       background: rgba(255, 255, 255, 0.10); color: var(--text-primary); border: 1px solid rgba(255, 255, 255, 0.10);
@@ -907,6 +911,7 @@
     #category-bar::-webkit-scrollbar { display: none; }
     .cat-pill {
       position: relative;
+      z-index: 1;
       flex-shrink: 0;
       border: 1px solid transparent;
       background: transparent;
@@ -920,16 +925,30 @@
       white-space: nowrap;
       transition: background var(--transition), color var(--transition), transform 0.35s var(--spring);
     }
-    .cat-pill:hover {
-      background: rgba(255, 255, 255, 0.10);
-      color: var(--text-primary);
-    }
+    .cat-pill:hover { color: var(--text-primary); }
     .cat-pill:active { transform: scale(0.94); }
     .cat-pill.active {
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+    /* The glass droplet that glides to the active category */
+    .cat-indicator {
+      position: absolute;
+      left: 0; top: 0;
+      width: var(--w, 0px); height: var(--h, 0px);
+      transform: translate(var(--x, 0px), var(--y, 0px));
+      border-radius: 999px;
       background: var(--prominent-bg);
-      color: var(--prominent-text);
-      font-weight: 600;
       box-shadow: var(--prominent-shadow);
+      pointer-events: none;
+      transition: transform 0.5s var(--spring), width 0.5s var(--spring);
+    }
+    .cat-indicator.stretch { animation: droplet 0.5s var(--ease-out); }
+    @keyframes droplet {
+      0%   { scale: 1 1; }
+      30%  { scale: 1.1 0.84; }
+      65%  { scale: 0.97 1.04; }
+      100% { scale: 1 1; }
     }
     .cat-pill.cat-add {
       font-size: 1.05rem;
@@ -939,6 +958,52 @@
       color: var(--text-muted);
     }
     .cat-pill.cat-add:hover { color: var(--text-primary); }
+
+    /* ─── Liquid Glass cursor (iPadOS-style pointer) ─────────────────── */
+    #glass-cursor {
+      position: fixed; left: 0; top: 0;
+      z-index: 10000;
+      pointer-events: none;
+      display: none;
+      opacity: 0;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.3) 62%, rgba(255, 255, 255, 0.2));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 0 0 0 1px rgba(255, 255, 255, 0.35),
+                  0 2px 10px rgba(0, 0, 0, 0.35);
+      transition: opacity 0.2s ease, background 0.25s ease, box-shadow 0.25s ease, scale 0.25s var(--spring);
+      will-change: transform, width, height;
+    }
+    html.glass-cursor-on #glass-cursor { display: block; }
+    #glass-cursor.visible { opacity: 1; }
+    #glass-cursor.morph {
+      background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%),
+        rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.07) 70%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+                  0 6px 18px rgba(0, 0, 0, 0.18);
+    }
+    #glass-cursor.pressed { scale: 0.92; }
+    html.glass-cursor-on, html.glass-cursor-on * { cursor: none !important; }
+    html.glass-cursor-on input, html.glass-cursor-on textarea { cursor: text !important; }
+
+    /* iOS-style switch */
+    .switch {
+      margin-left: auto; flex-shrink: 0;
+      width: 38px; height: 23px; border-radius: 999px;
+      position: relative;
+      background: rgba(255, 255, 255, 0.16);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+      transition: background 0.25s var(--ease-out);
+    }
+    .switch::after {
+      content: '';
+      position: absolute; top: 2px; left: 2px;
+      width: 19px; height: 19px; border-radius: 50%;
+      background: linear-gradient(180deg, #fff, #e8e8ed);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+      transition: transform 0.35s var(--spring);
+    }
+    [aria-checked="true"] > .switch { background: #30d158; }
+    [aria-checked="true"] > .switch::after { transform: translateX(15px); }
 
     /* ─── Category Modal ─────────────────────────────────────────────── */
     #cat-modal-overlay {
@@ -1008,8 +1073,9 @@
     }
     .cat-row-toggle.selected .cat-check,
     .cat-app-row.selected .cat-check {
-      background: #fff;
-      border-color: #fff;
+      background: var(--prominent-hover);
+      border-color: rgba(255, 255, 255, 0.55);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
       animation: checkPop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     .cat-row-toggle.selected .cat-check svg,
@@ -1116,7 +1182,8 @@
     .cat-detail-plus:hover { background: rgba(255, 255, 255, 0.13); }
     .cat-detail-plus.active {
       background: var(--prominent-bg);
-      border-color: rgba(255, 255, 255, 0.6);
+      border-color: var(--prominent-border);
+      box-shadow: var(--prominent-shadow);
       color: var(--prominent-text); transform: rotate(45deg);
     }
     .cat-detail-list {
@@ -1152,7 +1219,7 @@
     }
     .form-cat-chip.selected {
       background: var(--prominent-bg);
-      border-color: rgba(255, 255, 255, 0.6); color: var(--prominent-text);
+      border-color: var(--prominent-border); color: var(--prominent-text);
       box-shadow: var(--prominent-shadow);
     }
 
@@ -1312,6 +1379,13 @@
       <div class="settings-popup">
         <div class="settings-popup-label">Hintergrund</div>
         <div id="bg-groups"></div>
+
+        <div class="settings-popup-divider"></div>
+        <div class="settings-popup-label">Darstellung</div>
+        <button class="settings-popup-item" id="btn-cursor" role="switch" aria-checked="false">
+          <span class="settings-action-icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z"/></svg></span> Glas-Cursor
+          <span class="switch" aria-hidden="true"></span>
+        </button>
 
         <div class="settings-popup-divider"></div>
         <div class="settings-popup-label">Geräte &amp; Sicherung</div>
@@ -1505,6 +1579,8 @@
     <button class="btn btn-primary" id="transfer-close">Fertig</button>
   </div>
 </div>
+
+<div id="glass-cursor" aria-hidden="true"></div>
 
 <script src="vendor/qrcode.min.js" defer></script>
 <script>
@@ -2285,6 +2361,10 @@ toastUndo.addEventListener('click', () => {
 function renderCategoryBar() {
   categoryBar.innerHTML = '';
 
+  const indicator = document.createElement('span');
+  indicator.className = 'cat-indicator';
+  categoryBar.appendChild(indicator);
+
   categoryBar.appendChild(makeCatPill('Alle', null));
   categories.forEach(cat => categoryBar.appendChild(makeCatPill(cat.name, cat.id)));
 
@@ -2295,22 +2375,63 @@ function renderCategoryBar() {
   addPill.setAttribute('aria-label', 'Kategorie verwalten');
   addPill.addEventListener('click', () => openCatModal('manage'));
   categoryBar.appendChild(addPill);
+  requestAnimationFrame(() => moveCatIndicator(false));
 }
+
+let catHoverTimer = null;
 
 function makeCatPill(label, id) {
   const btn = document.createElement('button');
   btn.className = 'cat-pill' + (activeCategory === id ? ' active' : '');
+  btn.dataset.cat = id || '';
   btn.textContent = label;
   btn.addEventListener('click', () => setActiveCategory(id));
+  // With a mouse, sweeping across the bar is enough — a short dwell keeps
+  // a quick pass on the way to the settings from switching by accident.
+  btn.addEventListener('pointerenter', e => {
+    if (e.pointerType !== 'mouse') return;
+    clearTimeout(catHoverTimer);
+    catHoverTimer = setTimeout(() => setActiveCategory(id), 70);
+  });
+  btn.addEventListener('pointerleave', () => clearTimeout(catHoverTimer));
   return btn;
 }
 
+// Glides the glass bubble under the active pill, with a little liquid squish
+function moveCatIndicator(animate) {
+  const indicator = categoryBar.querySelector('.cat-indicator');
+  const pill = categoryBar.querySelector('.cat-pill.active');
+  if (!indicator || !pill) return;
+  if (!animate) indicator.style.transition = 'none';
+  indicator.style.setProperty('--x', pill.offsetLeft + 'px');
+  indicator.style.setProperty('--y', pill.offsetTop + 'px');
+  indicator.style.setProperty('--w', pill.offsetWidth + 'px');
+  indicator.style.setProperty('--h', pill.offsetHeight + 'px');
+  if (!animate) {
+    void indicator.offsetWidth;
+    indicator.style.transition = '';
+    return;
+  }
+  indicator.classList.remove('stretch');
+  void indicator.offsetWidth;   // restart the animation
+  indicator.classList.add('stretch');
+  const left = pill.offsetLeft, right = left + pill.offsetWidth;
+  if (left < categoryBar.scrollLeft || right > categoryBar.scrollLeft + categoryBar.clientWidth) {
+    categoryBar.scrollTo({ left: left - 24, behavior: 'smooth' });
+  }
+}
+
 function setActiveCategory(id) {
-  activeCategory = (activeCategory === id) ? null : id; // click active again → back to "Alle"
-  renderCategoryBar();
+  if (activeCategory === id) return;
+  activeCategory = id;
+  categoryBar.querySelectorAll('.cat-pill[data-cat]').forEach(p =>
+    p.classList.toggle('active', (p.dataset.cat || null) === id));
+  moveCatIndicator(true);
   renderLeftPanel();
   renderFavorites();
 }
+
+window.addEventListener('resize', () => moveCatIndicator(false));
 
 function addCategory(name) {
   name = name.trim();
@@ -3301,6 +3422,129 @@ btnInstall.addEventListener('click', async () => {
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW registration failed', err));
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// LIQUID GLASS CURSOR
+// A glass dot follows the mouse; over buttons it melts into a glass
+// highlight in the button's shape (like the iPad pointer). Cards and the
+// category pills have their own glass reaction, so the dot fades out there.
+// ══════════════════════════════════════════════════════════════════════
+
+const CURSOR_KEY   = 'linkdock_cursor';
+const glassCursor  = document.getElementById('glass-cursor');
+const btnCursor    = document.getElementById('btn-cursor');
+const finePointer  = matchMedia('(hover: hover) and (pointer: fine)');
+const MORPH_TARGETS = [
+  '.cat-pill.cat-add', '.settings-gear', '.settings-popup-item', '.btn', '.ctx-item',
+  '.alpha-name-item', '.cat-row-toggle', '.cat-row-open', '.cat-app-row.selectable',
+  '.form-cat-chip', '.cat-detail-plus', '#left-search-clear', '.cat-row-del',
+  '#toast-undo', '.bg-image-preview',
+].join(', ');
+const OWN_EFFECT = '.icon-card, #add-btn, .cat-pill:not(.cat-add)';
+const TEXT_FIELDS = 'input, textarea, [contenteditable="true"]';
+const DOT = 16;
+
+const cur = {
+  enabled: false,
+  x: 0, y: 0, w: DOT, h: DOT, r: DOT / 2,     // what is drawn
+  px: -100, py: -100,                         // the real pointer
+  target: null, targetRadius: 0,
+  hidden: true, frame: 0,
+};
+
+function cursorWanted() {
+  let saved = null;
+  try { saved = localStorage.getItem(CURSOR_KEY); } catch { /* storage blocked */ }
+  if (saved !== null) return saved === '1';
+  return !matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function setGlassCursor(on) {
+  cur.enabled = on && finePointer.matches;
+  document.documentElement.classList.toggle('glass-cursor-on', cur.enabled);
+  btnCursor.setAttribute('aria-checked', on ? 'true' : 'false');
+  if (!cur.enabled) glassCursor.classList.remove('visible');
+}
+
+function cursorTick() {
+  cur.frame = 0;
+  let tx, ty, tw, th, tr, ease;
+  if (cur.target && cur.target.isConnected) {
+    const rect = cur.target.getBoundingClientRect();
+    // Pulled slightly towards the pointer — the "magnetic" glass feel
+    const pull = 0.08;
+    tx = rect.left - 3 + (cur.px - (rect.left + rect.width / 2)) * pull;
+    ty = rect.top - 3 + (cur.py - (rect.top + rect.height / 2)) * pull;
+    tw = rect.width + 6; th = rect.height + 6;
+    tr = Math.min(cur.targetRadius + 3, th / 2);
+    ease = 0.28;
+    glassCursor.style.setProperty('--gx', `${((cur.px - tx) / tw) * 100}%`);
+    glassCursor.style.setProperty('--gy', `${((cur.py - ty) / th) * 100}%`);
+  } else {
+    tx = cur.px - DOT / 2; ty = cur.py - DOT / 2;
+    tw = DOT; th = DOT; tr = DOT / 2;
+    ease = cur.w > DOT + 1 ? 0.3 : 1;   // shrink back softly, then stick to the pointer
+  }
+  cur.x += (tx - cur.x) * ease; cur.y += (ty - cur.y) * ease;
+  cur.w += (tw - cur.w) * ease; cur.h += (th - cur.h) * ease;
+  cur.r += (tr - cur.r) * ease;
+  glassCursor.style.transform = `translate(${cur.x}px, ${cur.y}px)`;
+  glassCursor.style.width = `${cur.w}px`;
+  glassCursor.style.height = `${cur.h}px`;
+  glassCursor.style.borderRadius = `${cur.r}px`;
+
+  const settled = Math.abs(tx - cur.x) + Math.abs(ty - cur.y) + Math.abs(tw - cur.w) + Math.abs(th - cur.h) < 0.3;
+  if (!settled || cur.target) requestCursorFrame();
+}
+
+function requestCursorFrame() {
+  if (!cur.frame) cur.frame = requestAnimationFrame(cursorTick);
+}
+
+function updateCursorTarget(el) {
+  const own = el && el.closest(OWN_EFFECT);
+  const text = el && el.closest(TEXT_FIELDS);
+  const morph = !own && !text && el ? el.closest(MORPH_TARGETS) : null;
+  glassCursor.classList.toggle('visible', !own && !text && !cur.hidden);
+  if (morph === cur.target) return;
+  cur.target = morph;
+  cur.targetRadius = morph ? parseFloat(getComputedStyle(morph).borderTopLeftRadius) || 10 : 0;
+  glassCursor.classList.toggle('morph', !!morph);
+}
+
+document.addEventListener('pointermove', e => {
+  if (!cur.enabled || e.pointerType !== 'mouse') return;
+  if (cur.hidden) {   // first move after entering: appear right at the pointer
+    cur.hidden = false;
+    cur.x = e.clientX - DOT / 2; cur.y = e.clientY - DOT / 2;
+  }
+  cur.px = e.clientX; cur.py = e.clientY;
+  updateCursorTarget(e.target);
+  requestCursorFrame();
+}, { passive: true });
+
+document.addEventListener('pointerdown', e => {
+  if (cur.enabled && e.pointerType === 'mouse') glassCursor.classList.add('pressed');
+});
+document.addEventListener('pointerup', () => glassCursor.classList.remove('pressed'));
+document.documentElement.addEventListener('mouseleave', () => {
+  cur.hidden = true;
+  glassCursor.classList.remove('visible');
+});
+window.addEventListener('blur', () => { cur.hidden = true; glassCursor.classList.remove('visible'); });
+// Lists scroll under a resting pointer — keep the highlight on its button
+document.addEventListener('scroll', () => { if (cur.target) requestCursorFrame(); }, { capture: true, passive: true });
+// While dragging favourites the system shows its own drag cursor
+document.addEventListener('dragstart', () => glassCursor.classList.remove('visible'));
+document.addEventListener('dragend', () => { if (cur.enabled) cur.hidden = true; });
+
+btnCursor.addEventListener('click', () => {
+  const on = btnCursor.getAttribute('aria-checked') !== 'true';
+  try { localStorage.setItem(CURSOR_KEY, on ? '1' : '0'); } catch { /* storage blocked */ }
+  setGlassCursor(on);
+});
+finePointer.addEventListener('change', () => setGlassCursor(cursorWanted()));
+setGlassCursor(cursorWanted());
 
 // ══════════════════════════════════════════════════════════════════════
 // INIT
