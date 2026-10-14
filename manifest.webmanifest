@@ -1,6 +1,6 @@
 {
-  "name": "WebFavs – Mein Bookmark-Manager",
-  "short_name": "WebFavs",
+  "name": "Linkdock",
+  "short_name": "Linkdock",
   "description": "Alle deine Websites an einem Ort – Favoriten, Kategorien und Suche.",
   "id": "./",
   "start_url": "./",

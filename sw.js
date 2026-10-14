@@ -1,8 +1,8 @@
-// WebFavs service worker — makes the app installable and usable offline.
+// Linkdock service worker — makes the app installable and usable offline.
 // Pages load network-first (so new deployments show up immediately);
 // images and other assets are served from cache once they've been seen.
 
-const CACHE = 'webfavs-v2';
+const CACHE = 'linkdock-v3';
 const CORE = [
   './',
   './index.html',

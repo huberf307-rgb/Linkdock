@@ -3,16 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>WebFavs – Mein Bookmark-Manager</title>
-  <meta name="description" content="Persönlicher Bookmark-Manager im Niagara-Launcher-Stil mit Favoriten und Kontextmenü." />
-  <link rel="icon" type="image/png" href="icons/icon-192.png" />
+  <title>Linkdock – Alle deine Websites an einem Ort</title>
+  <meta name="description" content="Linkdock – alle deine Websites an einem Ort: Favoriten, Kategorien und Suche, lokal gespeichert." />
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
   <link rel="manifest" href="manifest.webmanifest" />
   <meta name="theme-color" content="#1c1c1e" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="WebFavs" />
+  <meta name="apple-mobile-web-app-title" content="Linkdock" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -1264,7 +1265,7 @@
   <div class="header-brand">
     <div class="header-logo">🔖</div>
     <div>
-      <div class="header-title">WebFavs</div>
+      <div class="header-title">Linkdock</div>
       <div class="header-subtitle">Persönlicher Bookmark-Manager</div>
     </div>
   </div>
@@ -1477,9 +1478,10 @@
 <script src="vendor/qrcode.min.js" defer></script>
 <script>
 // ══════════════════════════════════════════════════════════════════════
-// WebFavs — Niagara-style Bookmark Manager
+// Linkdock — all your websites in one place
 // ══════════════════════════════════════════════════════════════════════
 
+// Storage keys keep the old 'webfavs' prefix so existing data stays readable
 const STORAGE_KEY     = 'webfavs_bookmarks';
 const CAT_STORAGE_KEY = 'webfavs_categories';
 const LETTERS         = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '#'];
@@ -2629,12 +2631,12 @@ function snapshot() {
   };
 }
 
-const JSON_PICKER_TYPES = [{ description: 'WebFavs-Sicherung', accept: { 'application/json': ['.json'] } }];
+const JSON_PICKER_TYPES = [{ description: 'Linkdock-Sicherung', accept: { 'application/json': ['.json'] } }];
 
 async function setupFileBackup() {
   try {
     backupHandle = await window.showSaveFilePicker({
-      suggestedName: 'WebFavs-Sicherung.json',
+      suggestedName: 'Linkdock-Sicherung.json',
       types: JSON_PICKER_TYPES,
     });
     await idbSet('backupHandle', backupHandle);
@@ -2748,9 +2750,31 @@ btnRestore.addEventListener('click', restoreFromFile);
 // which browsers never send to the server.
 // ══════════════════════════════════════════════════════════════════════
 
-const APP_URL = location.protocol.startsWith('http')
-  ? location.origin + location.pathname
-  : 'https://web-favorites.vercel.app/';
+// Set this to the own domain once it is live (e.g. 'https://linkdock.de/').
+// Transfer links then always point there, and visitors of any other
+// address are forwarded automatically — their data travels along.
+const CANONICAL_URL = '';
+const MIGRATED_KEY  = 'webfavs_migrated';
+
+const APP_URL = CANONICAL_URL
+  || (location.protocol.startsWith('http') ? location.origin + location.pathname : 'https://web-favorites.vercel.app/');
+
+// Old address → own domain. Data goes along only once, so a stale copy here
+// can't overwrite newer data there later.
+function migrateToCanonical() {
+  if (!CANONICAL_URL || !location.protocol.startsWith('http')) return false;
+  if (location.origin === new URL(CANONICAL_URL).origin) return false;
+  if (['localhost', '127.0.0.1'].includes(location.hostname)) return false;
+  if (localStorage.getItem(STORAGE_KEY) === null || localStorage.getItem(MIGRATED_KEY)) {
+    location.replace(CANONICAL_URL);
+    return true;
+  }
+  buildTransferLink().then(link => {
+    localStorage.setItem(MIGRATED_KEY, '1');
+    location.replace(link);
+  });
+  return true;
+}
 
 const transferOverlay = document.getElementById('transfer-overlay');
 const transferModal   = document.getElementById('transfer-modal');
@@ -2856,7 +2880,7 @@ transferCopy.addEventListener('click', () => {
     .catch(() => showToast('Kopieren fehlgeschlagen', false));
 });
 transferShare.addEventListener('click', () => {
-  navigator.share({ title: 'WebFavs', text: 'Meine WebFavs-Daten', url: transferLink }).catch(() => {});
+  navigator.share({ title: 'Linkdock', text: 'Meine Linkdock-Daten', url: transferLink }).catch(() => {});
 });
 transferClose.addEventListener('click', closeTransfer);
 transferOverlay.addEventListener('click', closeTransfer);
@@ -3000,7 +3024,7 @@ function renderInstall() {
     installSection.hidden = false;
     btnInstall.hidden = false;
     installHint.textContent =
-      'Installiert WebFavs wie ein normales Programm – mit eigenem Fenster, ' +
+      'Installiert Linkdock wie ein normales Programm – mit eigenem Fenster, ' +
       'Startmenü-Eintrag und Taskleisten-Symbol.';
   } else if (isIOS) {
     installSection.hidden = false;
@@ -3015,7 +3039,7 @@ window.addEventListener('beforeinstallprompt', e => {
 window.addEventListener('appinstalled', () => {
   deferredInstall = null;
   renderInstall();
-  showToast('WebFavs wurde als App installiert', false);
+  showToast('Linkdock wurde als App installiert', false);
 });
 btnInstall.addEventListener('click', async () => {
   if (!deferredInstall) return;
@@ -3033,14 +3057,15 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
 // INIT
 // ══════════════════════════════════════════════════════════════════════
 
-renderBackgroundGrid();
-applyBackground();
 loadCategories();
 loadBookmarks();
+const migrating = migrateToCanonical();
+renderBackgroundGrid();
+applyBackground();
 renderAll();
 renderInstall();
 initFileBackup();
-checkUrlImport();
+if (!migrating) checkUrlImport();
 document.addEventListener('pointerdown', requestPersistentStorage, { once: true });
 </script>
 </body>

@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1b2636"/>
+      <stop offset="1" stop-color="#06080c"/>
+    </linearGradient>
+    <linearGradient id="sheen" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.62"/>
+      <stop offset="0.5" stop-color="#fff" stop-opacity="0.30"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0.40"/>
+    </linearGradient>
+    <linearGradient id="rim" gradientUnits="userSpaceOnUse" x1="200" y1="160" x2="824" y2="864">
+      <stop offset="0" stop-color="#fff" stop-opacity="1"/>
+      <stop offset="0.4" stop-color="#fff" stop-opacity="0.35"/>
+      <stop offset="0.7" stop-color="#fff" stop-opacity="0.15"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0.75"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.35"/>
+      <stop offset="0.2" stop-color="#fff" stop-opacity="0.04"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0.12"/>
+    </linearGradient>
+    <clipPath id="tile"><rect width="1024" height="1024" rx="0"/></clipPath>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="70"/></filter>
+    <filter id="frost" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="30"/></filter>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="24"/></filter>
+    <mask id="glass" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <g transform="translate(512 512) scale(25) translate(-12 -12)"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71 M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke="#fff" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round" /></g>
+    </mask>
+    <!-- thin ring along the glass outline = specular edge -->
+    <mask id="ring" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <g transform="translate(512 512) scale(25) translate(-12 -12)"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71 M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke="#fff" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round" /><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71 M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke="#000" stroke-width="2.3800000000000003" stroke-linecap="round" stroke-linejoin="round" /></g>
+    </mask>
+    <!-- light catching the upper inner part of the glass -->
+    <mask id="glint" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <g transform="translate(-7 -9) translate(512 512) scale(25) translate(-12 -12)"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71 M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke="#fff" stroke-width="1.4000000000000001" stroke-linecap="round" stroke-linejoin="round" /></g>
+    </mask>
+  </defs>
+
+  <g clip-path="url(#tile)">
+    <rect width="1024" height="1024" fill="url(#bg)"/>
+    <g filter="url(#soft)" opacity="0.6">
+      <circle cx="350" cy="320" r="330" fill="#36d1c4"/>
+      <circle cx="710" cy="730" r="360" fill="#6d5dfc"/>
+      <circle cx="780" cy="250" r="180" fill="#3b82f6"/></g>
+
+    <!-- contact shadow under the glass -->
+    <g transform="translate(0 28)" opacity="0.6" filter="url(#shadow)">
+      <g transform="translate(512 512) scale(25) translate(-12 -12)"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71 M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke="#000" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round" /></g>
+    </g>
+
+    <!-- frosted glass picking up the colour behind it -->
+    <g mask="url(#glass)">
+      <rect width="1024" height="1024" fill="#1f2937"/>
+      <g filter="url(#frost)" opacity="0.8">
+      <circle cx="350" cy="320" r="330" fill="#36d1c4"/>
+      <circle cx="710" cy="730" r="360" fill="#6d5dfc"/>
+      <circle cx="780" cy="250" r="180" fill="#3b82f6"/></g>
+      <rect width="1024" height="1024" fill="url(#sheen)"/>
+    </g>
+    <g mask="url(#glint)"><rect width="1024" height="1024" fill="#fff" opacity="0.14"/></g>
+    <g mask="url(#ring)"><rect width="1024" height="1024" fill="url(#rim)"/></g>
+
+  </g>
+</svg>
