@@ -2,7 +2,7 @@
 // Pages load network-first (so new deployments show up immediately);
 // images and other assets are served from cache once they've been seen.
 
-const CACHE = 'linkdock-v6';
+const CACHE = 'linkdock-v7';
 const CORE = [
   './',
   './index.html',
