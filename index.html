@@ -3000,12 +3000,16 @@ function snapshot() {
   };
 }
 
-const JSON_PICKER_TYPES = [{ description: 'Linkdock-Sicherung', accept: { 'application/json': ['.json'] } }];
+const BACKUP_FILE_NAME  = 'Linkdock Sicherung.json';
+// Default names used by earlier versions; only these get renamed, a name the
+// user picked themselves is left alone.
+const OLD_BACKUP_NAME_RE = /^(WebFavs|Linkdock)-Sicherung.*\.json$/i;
+const JSON_PICKER_TYPES = [{ description: 'Linkdock Sicherung', accept: { 'application/json': ['.json'] } }];
 
 async function setupFileBackup() {
   try {
     backupHandle = await window.showSaveFilePicker({
-      suggestedName: 'Linkdock-Sicherung.json',
+      suggestedName: BACKUP_FILE_NAME,
       types: JSON_PICKER_TYPES,
     });
     await idbSet('backupHandle', backupHandle);
@@ -3032,6 +3036,7 @@ async function writeFileBackup() {
       perm = await backupHandle.requestPermission({ mode: 'readwrite' });
     }
     if (perm !== 'granted') { backupState = 'paused'; renderBackupStatus(); return; }
+    await renameOldBackupFile();
     const writable = await backupHandle.createWritable();
     await writable.write(JSON.stringify(snapshot(), null, 2));
     await writable.close();
@@ -3042,6 +3047,18 @@ async function writeFileBackup() {
     backupState = 'error';
   }
   renderBackupStatus();
+}
+
+// Backups set up before the rename still point at e.g. "WebFavs-Sicherung.json".
+// Browsers that can rename files (move) switch them over to the new name.
+async function renameOldBackupFile() {
+  const name = backupHandle.name;
+  if (name === BACKUP_FILE_NAME || !OLD_BACKUP_NAME_RE.test(name)) return;
+  if (typeof backupHandle.move !== 'function') return;
+  try {
+    await backupHandle.move(BACKUP_FILE_NAME);
+    await idbSet('backupHandle', backupHandle);
+  } catch { /* name taken or not supported — keep writing to the old file */ }
 }
 
 async function restoreFromFile() {
