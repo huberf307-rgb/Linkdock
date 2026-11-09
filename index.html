@@ -1720,10 +1720,9 @@ const ICON_X = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d=
 // icon brings along (Claude's orange, Gmail's white, …) is taken out and
 // becomes the colour of the glass tile; dark one-colour marks turn white.
 //
-// Sources are tried in order until one loads (same order on every host,
-// so Vercel and Cloudflare show identical icons):
+// Sources are tried in order until one loads:
 //   horse  icon.horse — public, CORS-enabled, mostly large app icons
-//   proxy  our own /api/icon (Vercel / Cloudflare function, same origin)
+//   proxy  our own /api/icon (Cloudflare Worker, same origin)
 //   google Google's favicon service — always there, but pixels unreadable
 const ICON_META_KEY = 'linkdock_iconmeta';
 let iconMeta = {};
@@ -1740,7 +1739,7 @@ const ICON_SOURCES = {
   google: host => ({ src: `https://www.google.com/s2/favicons?domain=${encodeURIComponent('https://' + host)}&sz=128`, cors: false, readable: false }),
 };
 
-// Static hosts without the function answer /api/icon with the HTML page,
+// Static hosts without the worker answer /api/icon with the HTML page,
 // so check once per session that it really returns an image.
 const iconProxyReady = (() => {
   if (!location.protocol.startsWith('http')) return Promise.resolve(false);

@@ -6,7 +6,3 @@
 .wrangler
 wrangler.jsonc
 worker
-functions
-api
-*.md
-Irisierendes*.png
