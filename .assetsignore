@@ -1,0 +1,12 @@
+# Files in the repo root that must not be served as static assets.
+.assetsignore
+.git
+.gitignore
+.claude
+.wrangler
+wrangler.jsonc
+worker
+functions
+api
+*.md
+Irisierendes*.png
